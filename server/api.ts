@@ -1,3 +1,4 @@
+import { attachDatabasePool } from "@vercel/functions"
 import pg from "pg"
 
 import { ANO_FIM, ANO_INICIO } from "../src/lib/anos.ts"
@@ -9,9 +10,10 @@ const pool = process.env.DATABASE_URL
   ? new pg.Pool({
       connectionString: process.env.DATABASE_URL,
       ssl: { rejectUnauthorized: false },
-      max: 1,
     })
   : new pg.Pool({ max: 5 })
+
+if (process.env.DATABASE_URL) attachDatabasePool(pool)
 
 const cache = new Map<string, Promise<unknown[]>>()
 
