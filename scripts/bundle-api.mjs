@@ -1,15 +1,15 @@
 import { build } from "esbuild"
-import { rm } from "node:fs/promises"
+import { readFile, rm, writeFile } from "node:fs/promises"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..")
 const entrada = join(root, "api/[...rota].ts")
-const saida = join(root, "api/[...rota].js")
+const temporario = join(root, "api/rota.bundle.js")
 
 await build({
   entryPoints: [entrada],
-  outfile: saida,
+  outfile: temporario,
   bundle: true,
   platform: "node",
   format: "esm",
@@ -18,5 +18,7 @@ await build({
 })
 
 if (process.env.VERCEL === "1") {
-  await rm(entrada)
+  await writeFile(entrada, await readFile(temporario))
 }
+
+await rm(temporario)
