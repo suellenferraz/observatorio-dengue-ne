@@ -21,6 +21,9 @@ const carregarGraficos = () => import("@/dashboard/graficos")
 const ChartIncidenciaAnual = lazy(() =>
   carregarGraficos().then((m) => ({ default: m.ChartIncidenciaAnual }))
 )
+const MapaIncidencia = lazy(() =>
+  carregarGraficos().then((m) => ({ default: m.MapaIncidencia }))
+)
 const ChartRankingEstados = lazy(() =>
   carregarGraficos().then((m) => ({ default: m.ChartRankingEstados }))
 )
@@ -96,6 +99,20 @@ export default function DashboardPage() {
                 <EstadoCarregamento erro={erro} className="h-95" />
               )}
             </div>
+          </section>
+          <section id="mapa" className="scroll-mt-4 px-4 lg:px-6">
+            {dados ? (
+              <Suspense fallback={<EstadoCarregamento className="h-128" />}>
+                <MapaIncidencia
+                  linhas={linhas}
+                  ano={ano}
+                  uf={uf}
+                  onUf={setUf}
+                />
+              </Suspense>
+            ) : (
+              <EstadoCarregamento erro={erro} className="h-128" />
+            )}
           </section>
           <div className="grid grid-cols-1 gap-4 px-4 md:gap-6 lg:px-6 @5xl/main:grid-cols-2">
             {dados && (

@@ -3,6 +3,7 @@ import {
   BugIcon,
   CalendarRangeIcon,
   LayoutDashboardIcon,
+  MapIcon,
   MapPinIcon,
   ShieldAlertIcon,
   UsersIcon,
@@ -22,6 +23,7 @@ import {
 
 const secoes = [
   { title: "Visão geral", url: "#visao-geral", icon: <LayoutDashboardIcon /> },
+  { title: "Mapa", url: "#mapa", icon: <MapIcon /> },
   { title: "Sazonalidade", url: "#sazonalidade", icon: <CalendarRangeIcon /> },
   { title: "Perfil dos casos", url: "#perfil", icon: <UsersIcon /> },
   { title: "Gravidade", url: "#gravidade", icon: <ShieldAlertIcon /> },
