@@ -11,7 +11,7 @@ export function formatadorTooltip(
   return (valor: unknown, nome: unknown, item: Item) => (
     <div className="flex w-full items-center gap-2">
       <span
-        className="size-2.5 shrink-0 rounded-[2px]"
+        className="size-2.5 shrink-0 rounded-xs"
         style={{ background: item.payload?.fill ?? item.color }}
       />
       <span className="text-muted-foreground">

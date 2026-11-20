@@ -1,7 +1,8 @@
 import { TrendingDownIcon, TrendingUpIcon } from "lucide-react"
 import type { ReactNode } from "react"
 
-import { EstadoCarregamento } from "@/components/estado-carregamento"
+import { Ajuda } from "@/components/painel/ajuda"
+import { EstadoCarregamento } from "@/components/painel/estado-carregamento"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
@@ -11,9 +12,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { useApi, type LinhaMunicipio, type LinhaUfAno } from "@/lib/api"
+import { useApi, type LinhaInterior } from "@/lib/api"
 import {
-  LIMITE_ALTA,
+  CAPITAIS,
   NORDESTE,
   TODOS,
   type Periodo,
@@ -22,8 +23,9 @@ import {
   formatarDecimal,
   formatarInteiro,
   formatarPercentual,
-  incidencia,
   nivel,
+  noPeriodo,
+  parcelaForaDaCapital,
   rotuloPeriodo,
   totalDoPeriodo,
   variacao,
@@ -33,7 +35,6 @@ type Props = {
   ano: Periodo
   uf: string
   totais: TotalAno[]
-  linhas: LinhaUfAno[]
 }
 
 function BadgeVariacao({ valor }: { valor: number | null }) {
@@ -53,17 +54,22 @@ function Indicador({
   acao,
   destaque,
   detalhe,
+  ajuda,
 }: {
   titulo: string
   valor: ReactNode
   acao?: ReactNode
   destaque: ReactNode
   detalhe: ReactNode
+  ajuda: string
 }) {
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardDescription>{titulo}</CardDescription>
+        <CardDescription className="flex items-center gap-1">
+          {titulo}
+          <Ajuda texto={ajuda} rotulo={`Sobre ${titulo}`} />
+        </CardDescription>
         <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
           {valor}
         </CardTitle>
@@ -77,64 +83,43 @@ function Indicador({
   )
 }
 
-function AnosEmNivelAlto({ totais }: { totais: TotalAno[] }) {
-  const altos = totais.filter((t) => t.incidencia >= LIMITE_ALTA)
-  const ultimo = altos[altos.length - 1]
+function CasosForaDaCapital({ ano, uf }: { ano: Periodo; uf: string }) {
+  const { dados } = useApi<LinhaInterior[]>("/api/interior")
+  const nordeste = uf === NORDESTE
+  const capital = CAPITAIS[uf]
+  const linhas = doRecorte(dados ?? [], uf).filter((l) => noPeriodo(l.ano, ano))
+  const casosCapital = linhas.reduce((s, l) => s + l.casosCapital, 0)
+  const casosInterior = linhas.reduce((s, l) => s + l.casosInterior, 0)
+  const total = casosCapital + casosInterior
+  const percentual = parcelaForaDaCapital(casosCapital, casosInterior)
+  const percentualCapital = total > 0 ? (casosCapital / total) * 100 : 0
+  const fora = casosInterior
+  const titulo = nordeste ? "Casos fora das capitais" : "Casos fora da capital"
+
   return (
     <Indicador
-      titulo="Anos em nível alto"
-      valor={`${altos.length} de ${totais.length}`}
-      destaque={ultimo ? `Último: ${ultimo.ano}` : "Nenhum ano"}
-      detalhe={`Incidência ≥ ${LIMITE_ALTA} por 100 mil`}
-    />
-  )
-}
-
-function EmNivelAlto({
-  ano,
-  uf,
-  linhas,
-}: {
-  ano: number
-  uf: string
-  linhas: LinhaUfAno[]
-}) {
-  const municipios = useApi<LinhaMunicipio[]>(`/api/municipios?ano=${ano}`)
-
-  if (uf === NORDESTE) {
-    const estados = linhas.filter((l) => l.ano === ano)
-    const altos = estados
-      .filter((l) => incidencia(l.casos, l.populacao) >= LIMITE_ALTA)
-      .map((l) => l.sigla)
-    return (
-      <Indicador
-        titulo="Estados em nível alto"
-        valor={`${altos.length} de ${estados.length}`}
-        destaque={altos.length ? altos.join(", ") : "Nenhum estado"}
-        detalhe={`Incidência ≥ ${LIMITE_ALTA} por 100 mil`}
-      />
-    )
-  }
-
-  const doEstado = doRecorte(municipios.dados ?? [], uf)
-  const altos = doEstado.filter(
-    (m) => incidencia(m.casos, m.pessoasAno) >= LIMITE_ALTA
-  )
-  return (
-    <Indicador
-      titulo="Municípios em nível alto"
-      valor={municipios.dados ? `${altos.length} de ${doEstado.length}` : "…"}
+      titulo={titulo}
+      valor={dados ? `${formatarDecimal(percentual)}%` : "…"}
       destaque={
-        municipios.dados
-          ? `${formatarDecimal((altos.length / Math.max(doEstado.length, 1)) * 100)}% dos municípios`
-          : "Carregando"
+        dados ? `${formatarInteiro(fora)} casos no interior` : "Carregando"
       }
-      detalhe={`Incidência ≥ ${LIMITE_ALTA} por 100 mil`}
+      detalhe={
+        dados
+          ? nordeste
+            ? `As nove capitais reúnem ${formatarDecimal(percentualCapital)}%`
+            : `${capital?.nome ?? "A capital"} reúne ${formatarDecimal(percentualCapital)}%`
+          : "Casos do interior ÷ casos do recorte"
+      }
+      ajuda={
+        nordeste
+          ? "Casos prováveis fora das nove capitais, divididos pelo total do recorte. Interior é todo município que não é capital. As capitais são São Luís, Teresina, Fortaleza, Natal, João Pessoa, Recife, Maceió, Aracaju e Salvador."
+          : `Casos prováveis fora de ${capital?.nome ?? "a capital"}, divididos pelo total do estado. O restante fica no interior.`
+      }
     />
   )
 }
 
-export function SectionCards({ ano, uf, totais, linhas }: Props) {
+export function SectionCards({ ano, uf, totais }: Props) {
   const atual = totalDoPeriodo(totais, ano)
   const anterior =
     ano === TODOS ? undefined : totais.find((t) => t.ano === ano - 1)
@@ -154,7 +139,7 @@ export function SectionCards({ ano, uf, totais, linhas }: Props) {
     <div className="grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4 dark:*:data-[slot=card]:bg-card">
       {!atual ? (
         Array.from({ length: 4 }, (_, i) => (
-          <EstadoCarregamento key={i} className="h-[150px]" />
+          <EstadoCarregamento key={i} className="h-37.5" />
         ))
       ) : (
         <>
@@ -172,6 +157,7 @@ export function SectionCards({ ano, uf, totais, linhas }: Props) {
                   : (anterior?.casos ?? 0)
               )
             )}
+            ajuda="Casos prováveis no período, sem duplicata. Confirmados são os que a ficha marca como confirmados. No período completo, a média divide o total pelo número de anos. A variação compara com o ano anterior."
           />
           <Indicador
             titulo={
@@ -190,8 +176,13 @@ export function SectionCards({ ano, uf, totais, linhas }: Props) {
             }
             detalhe={
               ano === TODOS
-                ? "Por 100 mil habitantes, ao ano"
+                ? "Casos ÷ população de cada ano × 100 mil"
                 : comparacao(formatarDecimal(anterior?.incidencia ?? 0))
+            }
+            ajuda={
+              ano === TODOS
+                ? "Média de casos novos por 100 mil habitantes em cada ano. Conta: (casos do período ÷ anos) ÷ população média × 100 mil. Baixa abaixo de 100, média de 100 a 299 e alta a partir de 300."
+                : "Casos daquele ano ÷ população daquele ano × 100 mil. Baixa abaixo de 100, média de 100 a 299 e alta a partir de 300."
             }
           />
           <Indicador
@@ -202,12 +193,9 @@ export function SectionCards({ ano, uf, totais, linhas }: Props) {
             }
             destaque={`${formatarInteiro(atual.alarme)} com sinais de alarme`}
             detalhe={`${formatarInteiro(atual.graves)} casos graves`}
+            ajuda="Óbito é a evolução registrada na ficha. Sinais de alarme e dengue grave são a classificação clínica. Um óbito não se soma a esses casos: são informações diferentes."
           />
-          {ano === TODOS ? (
-            <AnosEmNivelAlto totais={totais} />
-          ) : (
-            <EmNivelAlto ano={ano} uf={uf} linhas={linhas} />
-          )}
+          <CasosForaDaCapital ano={ano} uf={uf} />
         </>
       )}
     </div>

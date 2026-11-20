@@ -38,6 +38,13 @@ export type LinhaCriterio = {
   casos: number
 }
 
+export type LinhaInterior = {
+  sigla: string
+  ano: number
+  casosCapital: number
+  casosInterior: number
+}
+
 export type LinhaMunicipio = {
   codigo: string
   nome: string

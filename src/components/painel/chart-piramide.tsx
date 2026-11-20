@@ -1,7 +1,8 @@
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 
-import { EstadoCarregamento } from "@/components/estado-carregamento"
-import { formatadorTooltip } from "@/components/tooltip-valor"
+import { EstadoCarregamento } from "@/components/painel/estado-carregamento"
+import { formatadorTooltip } from "@/components/painel/tooltip-valor"
+import { Ajuda } from "@/components/painel/ajuda"
 import {
   Card,
   CardContent,
@@ -63,35 +64,47 @@ export function ChartPiramide({
         .reduce((s, l) => s + l.casos, 0)
     return {
       faixa: faixa.replace("-", "–"),
-      feminino: Math.round((soma("F") / total) * 1000) / 10,
-      masculino: -Math.round((soma("M") / total) * 1000) / 10,
+      feminino: -Math.round((soma("F") / total) * 1000) / 10,
+      masculino: Math.round((soma("M") / total) * 1000) / 10,
     }
   })
-  const mulheres = serie.reduce((s, l) => s + l.feminino, 0)
+  const mulheres = serie.reduce((s, l) => s + Math.abs(l.feminino), 0)
+  const extremo = Math.max(
+    ...serie.flatMap((l) => [Math.abs(l.feminino), l.masculino])
+  )
+  const limite = Math.ceil(extremo * 1.15) || 1
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
-          Faixa etária e sexo, {recorte}, {rotuloPeriodo(ano)}
+        <CardTitle className="flex items-center gap-1.5">
+          <span>
+            Faixa etária e sexo, {recorte}, {rotuloPeriodo(ano)}
+          </span>
+          <Ajuda
+            rotulo="Sobre faixa etária e sexo"
+            texto="Cada barra é casos daquela faixa e daquele sexo ÷ casos com idade e sexo informados. Casos sem idade ou sem sexo ficam de fora. As duas barras de uma faixa somam a parcela daquela idade."
+          />
         </CardTitle>
         <CardDescription>
-          % dos casos prováveis com idade e sexo informados
+          Parcela dos casos com idade e sexo informados. Mulheres à esquerda,
+          homens à direita.
         </CardDescription>
       </CardHeader>
       <CardContent>
         {!dados ? (
-          <EstadoCarregamento erro={erro} className="h-[300px]" />
+          <EstadoCarregamento erro={erro} className="h-105" />
         ) : (
           <ChartContainer
             config={chartConfig}
-            className="aspect-auto h-[300px] w-full"
+            className="aspect-auto h-105 w-full"
           >
             <BarChart
               data={serie}
               layout="vertical"
               stackOffset="sign"
-              margin={{ left: 0, right: 8 }}
+              barCategoryGap="12%"
+              margin={{ top: 8, right: 16, left: 8, bottom: 0 }}
             >
               <CartesianGrid horizontal={false} />
               <YAxis
@@ -99,10 +112,11 @@ export function ChartPiramide({
                 type="category"
                 tickLine={false}
                 axisLine={false}
-                width={44}
+                width={52}
               />
               <XAxis
                 type="number"
+                domain={[-limite, limite]}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(v) =>
@@ -121,16 +135,16 @@ export function ChartPiramide({
                 }
               />
               <Bar
-                dataKey="masculino"
-                stackId="sexo"
-                fill="var(--color-masculino)"
-                radius={[4, 0, 0, 4]}
-              />
-              <Bar
                 dataKey="feminino"
                 stackId="sexo"
                 fill="var(--color-feminino)"
-                radius={[0, 4, 4, 0]}
+                radius={4}
+              />
+              <Bar
+                dataKey="masculino"
+                stackId="sexo"
+                fill="var(--color-masculino)"
+                radius={4}
               />
               <ChartLegend content={<ChartLegendContent />} />
             </BarChart>
@@ -143,7 +157,8 @@ export function ChartPiramide({
             Mulheres: {formatarDecimal(mulheres)}% dos casos
           </div>
           <div className="text-muted-foreground">
-            Homens à esquerda, mulheres à direita
+            Mulheres à esquerda e homens à direita. As duas barras de uma faixa
+            somam a parcela daquela idade.
           </div>
         </CardFooter>
       )}

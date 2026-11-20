@@ -14,7 +14,7 @@ export function EstadoCarregamento({
     return (
       <div
         className={cn(
-          "flex h-[260px] w-full items-center justify-center gap-2 rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground",
+          "flex h-65 w-full items-center justify-center gap-2 rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground",
           className
         )}
       >
@@ -23,5 +23,5 @@ export function EstadoCarregamento({
       </div>
     )
   }
-  return <Skeleton className={cn("h-[260px] w-full", className)} />
+  return <Skeleton className={cn("h-65 w-full", className)} />
 }

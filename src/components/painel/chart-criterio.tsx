@@ -1,7 +1,8 @@
 import { Label, Pie, PieChart } from "recharts"
 
-import { EstadoCarregamento } from "@/components/estado-carregamento"
-import { formatadorTooltip } from "@/components/tooltip-valor"
+import { EstadoCarregamento } from "@/components/painel/estado-carregamento"
+import { formatadorTooltip } from "@/components/painel/tooltip-valor"
+import { Ajuda } from "@/components/painel/ajuda"
 import {
   Card,
   CardContent,
@@ -67,21 +68,27 @@ export function ChartCriterio({
   return (
     <Card className="@container/criterio flex flex-col">
       <CardHeader>
-        <CardTitle>
-          Critério de confirmação, {recorte}, {rotuloPeriodo(ano)}
+        <CardTitle className="flex items-center gap-1.5">
+          <span>
+            Critério de confirmação, {recorte}, {rotuloPeriodo(ano)}
+          </span>
+          <Ajuda
+            rotulo="Sobre o critério de confirmação"
+            texto="Cada fatia é casos daquele critério ÷ casos prováveis. Clínico-epidemiológico confirma pela ficha, sem exame. Laboratorial usa resultado de exame. Em investigação ainda não fechou o critério. Não informado ficou em branco."
+          />
         </CardTitle>
         <CardDescription>
-          Critério registrado na ficha dos casos prováveis
+          Casos de cada critério ÷ casos prováveis do período.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-1 items-center">
         {!dados ? (
-          <EstadoCarregamento erro={erro} className="h-[240px]" />
+          <EstadoCarregamento erro={erro} className="h-60" />
         ) : (
           <div className="flex w-full flex-col items-center gap-6 @md/criterio:flex-row @md/criterio:justify-center">
             <ChartContainer
               config={chartConfig}
-              className="aspect-square h-[220px] w-[220px] shrink-0"
+              className="aspect-square h-55 w-55 shrink-0"
             >
               <PieChart>
                 <ChartTooltip
@@ -145,7 +152,7 @@ export function ChartCriterio({
               {serie.map((s) => (
                 <li key={s.criterio} className="flex items-center gap-2">
                   <span
-                    className="size-2.5 shrink-0 rounded-[2px]"
+                    className="size-2.5 shrink-0 rounded-xs"
                     style={{ background: chartConfig[s.criterio].color }}
                   />
                   <span className="truncate text-muted-foreground">
@@ -171,7 +178,8 @@ export function ChartCriterio({
           </div>
           <div className="text-muted-foreground">
             {formatarDecimal(percentual(casosDe("naoInformado")))}% sem critério
-            informado na ficha
+            na ficha. Clínico-epidemiológico confirma sem exame; laboratorial
+            usa exame.
           </div>
         </CardFooter>
       )}

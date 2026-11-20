@@ -8,7 +8,8 @@ import {
   YAxis,
 } from "recharts"
 
-import { formatadorTooltip } from "@/components/tooltip-valor"
+import { formatadorTooltip } from "@/components/painel/tooltip-valor"
+import { Ajuda } from "@/components/painel/ajuda"
 import {
   Card,
   CardContent,
@@ -78,20 +79,26 @@ export function ChartRankingEstados({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
-          {typeof ano === "number"
-            ? `Incidência por estado em ${ano}`
-            : `Incidência média anual por estado, ${rotuloPeriodo(ano)}`}
+        <CardTitle className="flex items-center gap-1.5">
+          <span>
+            {typeof ano === "number"
+              ? `Incidência por estado em ${ano}`
+              : `Incidência média anual por estado, ${rotuloPeriodo(ano)}`}
+          </span>
+          <Ajuda
+            rotulo="Sobre a incidência por estado"
+            texto="Cada barra é casos do período × 100 mil ÷ soma da população de cada ano. No período completo, isso é a média anual. A barra maior é a maior taxa, não o estado com mais casos. A linha tracejada marca 300 por 100 mil, início do nível alto."
+          />
         </CardTitle>
         <CardDescription>
-          Casos prováveis por 100 mil habitantes. Clique num estado para
-          filtrar.
+          Casos × 100 mil ÷ soma da população de cada ano. Clique num estado
+          para filtrar.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer
           config={chartConfig}
-          className="aspect-auto h-[300px] w-full"
+          className="aspect-auto h-75 w-full"
         >
           <BarChart
             data={dados}
@@ -159,7 +166,8 @@ export function ChartRankingEstados({
             × a incidência de {menor.nome}
           </div>
           <div className="text-muted-foreground">
-            Linha tracejada: nível alto ({LIMITE_ALTA} por 100 mil)
+            A linha tracejada marca 300 por 100 mil, início do nível alto. A
+            ordem é a taxa, não o total de casos.
           </div>
         </CardFooter>
       )}

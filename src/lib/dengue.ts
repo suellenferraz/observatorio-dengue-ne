@@ -1,12 +1,15 @@
 import type { LinhaUfAno } from "@/lib/api"
 
+import { ANO_FIM, ANO_INICIO } from "@/lib/anos"
+
+export { CAPITAIS } from "@/lib/capitais"
+export { ANO_FIM, ANO_INICIO }
+
 export const NORDESTE = "NE"
 export const TODOS = "todos"
-export const ANO_INICIO = 2000
-export const ANO_FIM = 2025
-export const ANO_EM_REVISAO = 2025
 export const LIMITE_MEDIA = 100
 export const LIMITE_ALTA = 300
+export const POPULACAO_MINIMA = 100_000
 
 export const MESES = [
   "jan",
@@ -63,6 +66,18 @@ export function formatarPercentual(valor: number) {
 
 export function incidencia(casos: number, populacao: number) {
   return populacao > 0 ? (casos * 100_000) / populacao : 0
+}
+
+export function entraNoRankingDeIncidencia(populacaoMedia: number) {
+  return populacaoMedia >= POPULACAO_MINIMA
+}
+
+export function parcelaForaDaCapital(
+  casosCapital: number,
+  casosInterior: number
+) {
+  const total = casosCapital + casosInterior
+  return total > 0 ? (casosInterior / total) * 100 : 0
 }
 
 export function nivel(valor: number): Nivel {

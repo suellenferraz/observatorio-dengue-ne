@@ -8,7 +8,8 @@ import {
   YAxis,
 } from "recharts"
 
-import { formatadorTooltip } from "@/components/tooltip-valor"
+import { formatadorTooltip } from "@/components/painel/tooltip-valor"
+import { Ajuda } from "@/components/painel/ajuda"
 import {
   Card,
   CardAction,
@@ -26,7 +27,6 @@ import {
 } from "@/components/ui/chart"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import {
-  ANO_EM_REVISAO,
   LIMITE_ALTA,
   LIMITE_MEDIA,
   type Periodo,
@@ -71,12 +71,24 @@ export function ChartIncidenciaAnual({
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>
-          {medida === "incidencia" ? "Incidência" : "Casos prováveis"} por ano,{" "}
-          {recorte}
+        <CardTitle className="flex items-center gap-1.5">
+          <span>
+            {medida === "incidencia" ? "Incidência" : "Casos prováveis"} por
+            ano, {recorte}
+          </span>
+          <Ajuda
+            rotulo="Sobre a série anual"
+            texto={
+              medida === "incidencia"
+                ? "Cada ponto é casos daquele ano ÷ população daquele ano × 100 mil. As linhas tracejadas marcam 100, início do nível médio, e 300, início do nível alto. Clique num ano para filtrar o painel."
+                : "Cada ponto é o total de casos prováveis daquele ano, sem duplicata. Esse volume não é a taxa: uma capital pode liderar os casos e ficar no nível médio. Clique num ano para filtrar o painel."
+            }
+          />
         </CardTitle>
         <CardDescription>
-          2000 a 2025. Clique num ano para filtrar o painel.
+          {medida === "incidencia"
+            ? "Casos do ano ÷ população do ano × 100 mil. Clique num ano para filtrar o painel."
+            : "Total de casos prováveis em cada ano, sem duplicata. Clique num ano para filtrar o painel."}
         </CardDescription>
         <CardAction>
           <ToggleGroup
@@ -94,7 +106,7 @@ export function ChartIncidenciaAnual({
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         <ChartContainer
           config={chartConfig}
-          className="aspect-auto h-[280px] w-full"
+          className="aspect-auto h-70 w-full"
         >
           <AreaChart
             data={dados}
@@ -170,10 +182,6 @@ export function ChartIncidenciaAnual({
               cursor={false}
               content={
                 <ChartTooltipContent
-                  labelFormatter={(_, payload) => {
-                    const a = payload?.[0]?.payload?.ano
-                    return a === ANO_EM_REVISAO ? `${a} (sujeito a revisão)` : a
-                  }}
                   formatter={formatadorTooltip(chartConfig, formatar)}
                 />
               }
@@ -195,9 +203,9 @@ export function ChartIncidenciaAnual({
             Pico em {pico.ano}: {formatarDecimal(pico.incidencia)} por 100 mil
           </div>
           <div className="text-muted-foreground">
-            {anosAltos} de {totais.length} anos em nível alto (≥ {LIMITE_ALTA}).
-            Linhas tracejadas: limites de {LIMITE_MEDIA} e {LIMITE_ALTA} por 100
-            mil.
+            {medida === "incidencia"
+              ? `${anosAltos} de ${totais.length} anos em nível alto, 300 ou mais por 100 mil. As linhas tracejadas marcam 100 e 300.`
+              : `${anosAltos} de ${totais.length} anos chegaram ao nível alto na taxa, 300 ou mais por 100 mil. Este gráfico mostra o volume, não essa taxa.`}
           </div>
         </CardFooter>
       )}

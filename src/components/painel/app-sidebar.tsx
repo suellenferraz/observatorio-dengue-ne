@@ -8,7 +8,7 @@ import {
   UsersIcon,
 } from "lucide-react"
 
-import { NavMain } from "@/components/nav-main"
+import { NavMain } from "@/components/painel/nav-main"
 import {
   Sidebar,
   SidebarContent,
@@ -17,6 +17,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 
 const secoes = [
@@ -28,6 +29,8 @@ const secoes = [
 ]
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
+  const { setOpenMobile } = useSidebar()
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -36,6 +39,7 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton
               className="data-[slot=sidebar-menu-button]:p-1.5!"
               render={<a href="#visao-geral" />}
+              onClick={() => setOpenMobile(false)}
             >
               <BugIcon className="size-5!" />
               <span className="text-base font-semibold">

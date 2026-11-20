@@ -1,6 +1,3 @@
-export const ANO_INICIO = 2000
-export const ANO_FIM = 2025
-
 export const consultas = {
   ufAno: `
     with pop as (
@@ -106,5 +103,18 @@ export const consultas = {
     left join casos c using (cod_mun7)
     where m.uf_cod between 21 and 29
     order by m.nome
+  `,
+  interior: `
+    select e.sigla, n.ano,
+      count(*) filter (where n.cod_mun7::text = any($3::text[]))::int as "casosCapital",
+      count(*) filter (where not (n.cod_mun7::text = any($3::text[])))::int as "casosInterior"
+    from notificacao_dengue_ne n
+    join municipio m using (cod_mun7)
+    join estado e using (uf_cod)
+    where n.caso_provavel and not n.possivel_duplicata
+      and n.ano between $1 and $2
+      and m.uf_cod between 21 and 29
+    group by e.sigla, n.ano
+    order by n.ano, e.sigla
   `,
 } as const

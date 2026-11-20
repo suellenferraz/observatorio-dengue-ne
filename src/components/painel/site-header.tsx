@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge"
 import {
   Select,
   SelectContent,
@@ -8,13 +7,7 @@ import {
 } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import {
-  ANO_EM_REVISAO,
-  NORDESTE,
-  TODOS,
-  type Periodo,
-  rotuloPeriodo,
-} from "@/lib/dengue"
+import { NORDESTE, TODOS, type Periodo, rotuloPeriodo } from "@/lib/dengue"
 
 type Props = {
   ano: Periodo
@@ -47,11 +40,6 @@ export function SiteHeader({ ano, anos, uf, estados, onAno, onUf }: Props) {
           {ano === TODOS ? "Visão geral" : `Ano de ${ano}`}
         </h1>
         <div className="ml-auto flex items-center gap-2">
-          {ano === ANO_EM_REVISAO && (
-            <Badge variant="outline" className="hidden md:inline-flex">
-              {ANO_EM_REVISAO} sujeito a revisão
-            </Badge>
-          )}
           <Select
             items={regioes}
             value={uf}

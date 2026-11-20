@@ -1,6 +1,7 @@
 import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts"
 
-import { formatadorTooltip } from "@/components/tooltip-valor"
+import { formatadorTooltip } from "@/components/painel/tooltip-valor"
+import { Ajuda } from "@/components/painel/ajuda"
 import {
   Card,
   CardContent,
@@ -61,15 +62,22 @@ export function ChartGravidade({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Casos com sinais de alarme e graves, {recorte}</CardTitle>
+        <CardTitle className="flex items-center gap-1.5">
+          <span>Casos com sinais de alarme e graves, {recorte}</span>
+          <Ajuda
+            rotulo="Sobre sinais de alarme e dengue grave"
+            texto="As barras empilham a classificação do SINAN a partir de 2014: sinais de alarme e dengue grave. O óbito vem do campo evolução e não entra na altura da barra. Antes de 2014 a ficha usava outra classificação, por isso a série começa em 2014."
+          />
+        </CardTitle>
         <CardDescription>
-          {PRIMEIRO_ANO} a 2025, classificação atual do SINAN
+          Classificação do SINAN de {PRIMEIRO_ANO} a 2025. O óbito não entra na
+          barra.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer
           config={chartConfig}
-          className="aspect-auto h-[300px] w-full"
+          className="aspect-auto h-75 w-full"
         >
           <BarChart data={dados} margin={{ left: 0, right: 8 }}>
             <CartesianGrid vertical={false} />
@@ -123,8 +131,9 @@ export function ChartGravidade({
           graves e {formatarInteiro(resumo.obitos)} óbitos
         </div>
         <div className="text-muted-foreground">
-          Antes de {PRIMEIRO_ANO} a ficha usava outra classificação e a série
-          não é comparável
+          O óbito é outra informação da ficha e não entra na altura da barra.
+          Antes de {PRIMEIRO_ANO} a classificação era outra e a série não é
+          comparável.
         </div>
       </CardFooter>
     </Card>
