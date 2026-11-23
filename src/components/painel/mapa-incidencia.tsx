@@ -34,12 +34,17 @@ const FAIXAS = [0, 400, 800, 1200]
 function faixaDo(valor: number) {
   return Math.min(FAIXAS.length - 1, Math.floor(Math.min(valor, TETO) / PASSO))
 }
+// Paleta YlOrRd do notebook 07_incidencia.ipynb.
 const CORES: [number, string][] = [
-  [0, "var(--muted-foreground)"],
-  [400, "var(--chart-3)"],
-  [800, "var(--chart-1)"],
-  [1200, "var(--chart-2)"],
-  [TETO, "var(--chart-2)"],
+  [0, "#ffffcc"],
+  [200, "#ffeda0"],
+  [400, "#fed976"],
+  [600, "#feb24c"],
+  [800, "#fd8d3c"],
+  [1000, "#fc4e2a"],
+  [1200, "#e31a1c"],
+  [1400, "#bd0026"],
+  [TETO, "#800026"],
 ]
 
 function cor(valor: number) {
@@ -52,7 +57,7 @@ function cor(valor: number) {
   const [fim, corFim] = CORES[indice + 1]
   const trecho = fim === inicio ? 1 : (limitado - inicio) / (fim - inicio)
   const parte = Math.round(trecho * 100)
-  return `color-mix(in oklab, ${corFim} ${parte}%, ${corInicio})`
+  return `color-mix(in srgb, ${corFim} ${parte}%, ${corInicio})`
 }
 
 export function MapaIncidencia({
@@ -121,7 +126,7 @@ export function MapaIncidencia({
           </span>
           <Ajuda
             rotulo="Sobre o mapa de incidência"
-            texto="Cada estado é casos do período × 100 mil ÷ soma da população de cada ano. No período completo, isso é a média anual. A escala fica fixa de 0 a 1.600 para um ano continuar comparável ao outro. Acima de 1.600 a cor para no laranja. Clique num estado para filtrar o painel."
+            texto="Cada estado é casos do período × 100 mil ÷ soma da população de cada ano. No período completo, isso é a média anual. A escala fica fixa de 0 a 1.600 para um ano continuar comparável ao outro. A partir de 1.600, a cor permanece vermelho-escura. Clique num estado para filtrar o painel."
           />
         </CardTitle>
         <CardDescription>
@@ -248,7 +253,7 @@ export function MapaIncidencia({
               <div
                 className="flex h-2.5 overflow-hidden rounded-full"
                 role="group"
-                aria-label="Escala de 0 a 1.600 casos por 100 mil habitantes, nas cores do critério de confirmação."
+                aria-label="Escala de 0 a 1.600 casos por 100 mil habitantes, do amarelo-claro ao vermelho-escuro."
               >
                 {FAIXAS.map((inicio, indice) => {
                   const fim = indice === FAIXAS.length - 1 ? TETO : inicio + PASSO
@@ -268,7 +273,7 @@ export function MapaIncidencia({
                         faixa !== null && !ativa && "opacity-30"
                       )}
                       style={{
-                        background: `linear-gradient(to right, ${cor(inicio)}, ${cor(fim)})`,
+                        background: `linear-gradient(to right in srgb, ${cor(inicio)}, ${cor((inicio + fim) / 2)}, ${cor(fim)})`,
                       }}
                       onClick={() => setFaixa(ativa ? null : indice)}
                     />
@@ -289,8 +294,8 @@ export function MapaIncidencia({
         </div>
       </CardContent>
       <CardFooter className="text-sm text-muted-foreground">
-        A cor é a taxa do estado inteiro, nas cores do critério de
-        confirmação. Acima de 1.600 por 100 mil ela para no laranja.
+        A cor representa a taxa do estado inteiro. A partir de 1.600 por 100 mil,
+        a cor permanece vermelho-escura.
       </CardFooter>
     </Card>
   )
